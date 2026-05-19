@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart OCR Scanner</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family: Arial, sans-serif;
+            background:white;
+            color:black;
+            min-height:100vh;
+            padding:40px 20px;
+        }
+
+        .main{
+            max-width:1300px;
+            margin:auto;
+        }
+
+        h1{
+            text-align:center;
+            font-size:48px;
+            margin-bottom:10px;
+            animation:fadeDown 0.8s ease;
+        }
+
+        .subtitle{
+            text-align:center;
+            color:#555;
+            margin-bottom:50px;
+            animation:fadeDown 1s ease;
+        }
+
+        /* Upload Box */
+
+        .upload-box{
+            max-width:550px;
+            margin:auto;
+            border:2px solid black;
+            border-radius:18px;
+            padding:50px 35px;
+            text-align:center;
+            transition:0.3s;
+            animation:fadeUp 1s ease;
+        }
+
+        .upload-box:hover{
+            transform:translateY(-5px);
+            box-shadow:0px 10px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Hide Default Input */
+
+        input[type="file"]{
+            display:none;
+        }
+
+        /* Choose File Button */
+
+        .custom-file-upload{
+            display:inline-block;
+            padding:14px 28px;
+            border:2px solid black;
+            border-radius:10px;
+            cursor:pointer;
+            font-size:16px;
+            font-weight:bold;
+            transition:0.3s;
+            margin-bottom:20px;
+            background:white;
+        }
+
+        .custom-file-upload:hover{
+            background:black;
+            color:white;
+            transform:scale(1.05);
+        }
+
+        #file-name{
+            margin-bottom:25px;
+            color:#444;
+            font-size:15px;
+        }
+
+        /* Upload Button */
+
+        button{
+            padding:14px 35px;
+            border:none;
+            background:black;
+            color:white;
+            border-radius:10px;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        button:hover{
+            transform:scale(1.05);
+            box-shadow:0px 8px 18px rgba(0,0,0,0.2);
+        }
+
+        /* Result Section */
+
+        .result-container{
+            margin-top:60px;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+            gap:30px;
+            animation:fadeUp 1s ease;
+        }
+
+        .card{
+            border:2px solid black;
+            border-radius:18px;
+            overflow:hidden;
+            transition:0.3s;
+            background:white;
+        }
+
+        .card:hover{
+            transform:translateY(-6px);
+            box-shadow:0px 10px 20px rgba(0,0,0,0.12);
+        }
+
+        .card h2{
+            padding:18px;
+            border-bottom:2px solid black;
+            text-align:center;
+            font-size:24px;
+        }
+
+        .image-box{
+            padding:18px;
+        }
+
+        img{
+            width:100%;
+            border-radius:12px;
+            transition:0.3s;
+        }
+
+        img:hover{
+            transform:scale(1.02);
+        }
+
+        .text-box{
+            padding:18px;
+        }
+
+        textarea{
+            width:100%;
+            height:450px;
+            border:2px solid black;
+            border-radius:12px;
+            padding:15px;
+            font-size:15px;
+            resize:none;
+            outline:none;
+        }
+
+        .copy-btn{
+            width:100%;
+            margin-top:15px;
+        }
+
+        /* Animations */
+
+        @keyframes fadeDown{
+
+            from{
+                opacity:0;
+                transform:translateY(-30px);
+            }
+
+            to{
+                opacity:1;
+                transform:translateY(0px);
+            }
+
+        }
+
+        @keyframes fadeUp{
+
+            from{
+                opacity:0;
+                transform:translateY(30px);
+            }
+
+            to{
+                opacity:1;
+                transform:translateY(0px);
+            }
+
+        }
+
+        /* Mobile */
+
+        @media(max-width:768px){
+
+            h1{
+                font-size:36px;
+            }
+
+            .upload-box{
+                padding:35px 20px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="main">
+
+        <h1>Smart OCR Scanner</h1>
+
+        <p class="subtitle">
+            Upload → Scan → Extract Text
+        </p>
+
+        <!-- Upload Section -->
+
+        <div class="upload-box">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                <label for="file-upload" class="custom-file-upload">
+                    Choose Image
+                </label>
+
+                <input
+                    id="file-upload"
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    required
+                    onchange="showFileName(this)"
+                >
+
+                <div id="file-name">
+                    No file chosen
+                </div>
+
+                <button type="submit">
+                    Upload & Scan
+                </button>
+
+            </form>
+
+        </div>
+
+        <!-- Results Only After Processing -->
+
+        {% if image_path %}
+
+        <div class="result-container">
+
+            <!-- Uploaded Image -->
+
+            <div class="card">
+
+                <h2>Uploaded Image</h2>
+
+                <div class="image-box">
+
+                    <img
+                        src="{{ image_path }}"
+                        alt="Uploaded Image"
+                    >
+
+                </div>
+
+            </div>
+
+            <!-- Scanned Image -->
+
+            {% if scanned_path %}
+
+            <div class="card">
+
+                <h2>Scanned Image</h2>
+
+                <div class="image-box">
+
+                    <img
+                        src="{{ scanned_path }}"
+                        alt="Scanned Image"
+                    >
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+            <!-- Extracted Text -->
+
+            <div class="card">
+
+                <h2>Extracted Text</h2>
+
+                <div class="text-box">
+
+                    <textarea id="ocrText" readonly>{{ extracted_text }}</textarea>
+
+                    <button
+                        class="copy-btn"
+                        onclick="copyText()"
+                    >
+                        Copy Text
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <script>
+
+        function copyText(){
+
+            let text = document.getElementById("ocrText");
+
+            navigator.clipboard.writeText(text.value);
+
+            alert("Text Copied");
+
+        }
+
+        function showFileName(input){
+
+            let fileName = input.files[0]?.name || "No file chosen";
+
+            document.getElementById("file-name").innerText = fileName;
+
+        }
+
+    </script>
+
+</body>
+
+</html>
